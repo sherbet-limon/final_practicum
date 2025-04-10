@@ -2,9 +2,12 @@ module github.com/sherbet-limon/final_practicum
 
 go 1.23.0
 
+//replace go1f => ./
+
 require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/stretchr/testify v1.10.0
+//	go1f v0.0.0-00010101000000-000000000000
 	modernc.org/sqlite v1.37.0
 )
 
