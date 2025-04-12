@@ -10,6 +10,6 @@ func main() {
 		log.Printf("Ошибка инициализации БД: %v\n", err)
 	}
 	log.Println("БД успешно инициализирована")
-	server.Server()
+	server.Run()
 	
 }

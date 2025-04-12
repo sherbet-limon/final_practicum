@@ -7,9 +7,10 @@ import (
 
 )
 //локальный сервер на порту 7540
-func Server() error {
+func Run() error {
 	port := 7540
 	http.Handle("/", http.FileServer(http.Dir("web")))
 	log.Println("Сервер запущен на http://localhost:7540")
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
+
