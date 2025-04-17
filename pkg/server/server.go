@@ -7,7 +7,8 @@ import (
 	"go1f/pkg/api"
 )
 
-// локальный сервер на порту 7540
+
+// запускает локальный сервер на порту 7540
 func Run() error {
 	api.Init()
 	port := 7540
@@ -15,3 +16,4 @@ func Run() error {
 	log.Println("Сервер запущен на http://localhost:7540")
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
+

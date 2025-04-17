@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -10,53 +9,41 @@ import (
 
 const formatDate string = "20060102"
 
-// Функция возвращает след.дату исполнения задачи
-func nextDateHandler(w http.ResponseWriter, r *http.Request) {
-	dstart := r.FormValue("date")
-	if dstart == "" {
-		http.Error(w, "Нет данных", http.StatusBadRequest)
-	}
-	repeat := r.FormValue("repeat")
-	if repeat == "" {
-		http.Error(w, "Нет данных", http.StatusBadRequest)
-	}
-	nowStr := r.FormValue("now")
+// при отсутствии даты, подставляет текущее время
+func CheckDate(nowStr string) (time.Time, error) {
 	var now time.Time
 	var err error
 	if nowStr == "" {
 		now = time.Now()
-	}else{
+	} else {
 		now, err = time.Parse(formatDate, nowStr)
 		if err != nil {
 			panic(err)
 		}
 	}
-	
-	nextDate, err := NextDate(now, dstart, repeat)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	w.Write([]byte(nextDate))
+	return now, nil
 }
-
 
 // проверяет, что дата старта позже даты now
 func afterDate(date time.Time, nowStr time.Time) bool {
 	return date.After(nowStr)
 }
 
-// парсит строку, переносит дату на указанное количество дней/год
-func NextDate(now time.Time, dstart string, repeat string) (string, error) {
+// парсит дату, делит repeat на части
+func PrepareNextDate(repeat string, dstart string) ([]string, time.Time, error) {
 	dateStart, err := time.Parse(formatDate, dstart)
 	if err != nil {
-		return "", errors.New("неверный формат времени, ожидается YYYYMMDD")
+		return nil, time.Time{}, errors.New("неверный формат времени, ожидается YYYYMMD")
 	}
 	dateParts := strings.Split(repeat, " ")
 	if len(dateParts) < 1 {
-		return "", errors.New("неверный формат")
+		return nil, time.Time{}, errors.New("неверный формат")
 	}
-	//var nextDate time.Time
+	return dateParts, dateStart, nil
+}
+
+// переносит дату на указанное количество дней/год
+func NextDate(now time.Time, dateParts []string, dateStart time.Time) (string, error) {
 	switch dateParts[0] {
 	case "d":
 		if len(dateParts) < 2 {

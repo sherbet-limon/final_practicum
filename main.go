@@ -5,6 +5,9 @@ import (
 	"go1f/pkg/db"
 	"log"
 )
+
+const FormatDate string = "20060102"
+
 func main() {
 	if err:= db.Init("scheduler.db"); err != nil {
 		log.Printf("Ошибка инициализации БД: %v\n", err)
