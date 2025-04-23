@@ -8,6 +8,8 @@ import (
 const FormatDate string = "20060102"
 // обрабатывает входящий запрос, возвращает след.дату исполнения задачи
 func NextDateHandler(w http.ResponseWriter, r *http.Request) {
+
+	//дата выполнения получена из запроса (может быть любой)
 	dstart := r.FormValue("date")
 	if dstart == "" {
 		http.Error(w, "Нет данных", http.StatusBadRequest)
@@ -16,7 +18,10 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	if repeat == "" {
 		http.Error(w, "Нет данных", http.StatusBadRequest)
 	}
+	// дата "сегодняшняя", которую достаем из запроса для проверки на пустоту
 	nowStr := r.FormValue("now")
+
+	// дата "сегодняшняя", которую используем далее
 	var now time.Time
 	var err error
 	if nowStr == "" {
@@ -27,12 +32,17 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 	}
-	date, time, err:= PrepareNextDate(repeat, dstart)
+	rule, err:= PrepareRepeat(repeat)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "неверный формат правила повторения", http.StatusBadRequest)
 		return
 	}
-	nextDate, err := NextDate(now, date, time)
+	date, err:= PrepareDate(dstart)
+	if err != nil {
+		http.Error(w, "неверный формат времени, ожидается YYYYMMD", http.StatusBadRequest)
+		return
+	}
+	nextDate, err := NextDate(now, rule, date)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

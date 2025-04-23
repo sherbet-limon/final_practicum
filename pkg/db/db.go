@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"log"
+	
 )
 	
 const schema = `
@@ -33,11 +34,9 @@ func Init(dbFile string) error{
 	defer db.Close()
 	if  install {
 		if _, err:= db.Exec(schema); err != nil {
-		//fmt.Errorf("не удалось создать таблицу: %w", err)
 		log.Println("не удалось создать таблицу: %w", err)
 		}
 		if _, err:= db.Exec(schemaIdx); err != nil {
-		//fmt.Errorf("не удалось создать индекс к date: %w", err)
 		log.Println("не удалось создать индекс к date: %w", err)
 		}
 	}

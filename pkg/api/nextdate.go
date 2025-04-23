@@ -24,22 +24,41 @@ func CheckDate(nowStr string) (time.Time, error) {
 	return now, nil
 }
 
-// проверяет, что дата старта позже даты now
-func afterDate(date time.Time, nowStr time.Time) bool {
-	return date.After(nowStr)
+// проверяет, что дата из запроса позже даты текущей
+func afterDate(dateReq time.Time, now time.Time) bool {
+	dateR := dateReq.Format(FormatDate)
+	dateNow := now.Format(FormatDate)
+	if dateNow == dateR { 	//пришлось добавить такую проверку из-за разногласий
+		return true 		//today в тестах (присваивалась текущая дата и 00:00ч)
+	} 						//и получаемых через time.Now()(присваивалась текущая дата и время до секунд)
+	if dateReq.After(now) {
+		return true
+	}
+	return false
 }
 
-// парсит дату, делит repeat на части
-func PrepareNextDate(repeat string, dstart string) ([]string, time.Time, error) {
+// приводит строку к формату даты
+func PrepareDate(dstart string) (time.Time, error) {
+	if len(dstart) != 8 {
+		return time.Time{}, errors.New("дата должна быть в формате YYYYMMDD")
+	}
 	dateStart, err := time.Parse(formatDate, dstart)
 	if err != nil {
-		return nil, time.Time{}, errors.New("неверный формат времени, ожидается YYYYMMD")
+		return time.Time{}, errors.New("неверный формат даты, ожидается YYYYMMD")
 	}
+	if dateStart.Format("20060102") != dstart {
+		return time.Time{}, errors.New("несуществующая дата")
+	}
+	return dateStart, nil
+}
+
+// делит repeat из запроса на части
+func PrepareRepeat(repeat string) ([]string, error) {
 	dateParts := strings.Split(repeat, " ")
 	if len(dateParts) < 1 {
-		return nil, time.Time{}, errors.New("неверный формат")
+		return nil, errors.New("неверный формат правила повторения")
 	}
-	return dateParts, dateStart, nil
+	return dateParts, nil
 }
 
 // переносит дату на указанное количество дней/год
@@ -67,9 +86,8 @@ func NextDate(now time.Time, dateParts []string, dateStart time.Time) (string, e
 			}
 		}
 	default:
-		return "", errors.New("недопустимый формат записи")
+		return "", errors.New("недопустимый формат правила повторения")
 	}
 	nextDate := dateStart.Format(formatDate)
-
 	return nextDate, nil
 }
