@@ -3,7 +3,6 @@ package main
 import (
 	"go1f/pkg/server"
 	"go1f/pkg/db"
-	// "go1f/pkg/api"
 	"log"
 )
 
@@ -15,5 +14,4 @@ func main() {
 	}
 	log.Println("БД успешно инициализирована")
 	server.Run()
-	
 }

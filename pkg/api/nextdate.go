@@ -29,7 +29,7 @@ func afterDate(dateReq time.Time, now time.Time) bool {
 	dateR := dateReq.Format(FormatDate)
 	dateNow := now.Format(FormatDate)
 	if dateNow == dateR { 	//пришлось добавить такую проверку из-за разногласий
-		return true 		//today в тестах (присваивалась текущая дата и 00:00ч)
+		return true 		//today в тестах (присваивалась текущая дата и 00:00ч без секунд)
 	} 						//и получаемых через time.Now()(присваивалась текущая дата и время до секунд)
 	if dateReq.After(now) {
 		return true

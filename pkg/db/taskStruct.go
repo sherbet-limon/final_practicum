@@ -8,3 +8,4 @@ type Task struct {
 	Comment string  `json:"comment"`
 	Repeat  *string `json:"repeat"`
 }
+

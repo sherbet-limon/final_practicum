@@ -121,7 +121,6 @@ func TestEditTask(t *testing.T) {
 			t.Errorf("Дата не может быть меньше сегодняшней")
 		}
 	}
-
 	updateTask(map[string]any{
 		"id":      id,
 		"date":    now.Format(`20060102`),
