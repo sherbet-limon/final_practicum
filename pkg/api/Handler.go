@@ -46,6 +46,7 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		task.Date = dateTaskNow.Format(FormatDate)
+		timeParseTaskDate = dateTaskNow
 	} else {
 		dateTaskNow = time.Now()
 		timeParseTaskDate, err = PrepareDate(task.Date)
