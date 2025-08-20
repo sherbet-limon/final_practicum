@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 	"time"
-	
+	"go1f/pkg/db"
 )
 const FormatDate string = "20060102"
 // обрабатывает входящий запрос, возвращает след.дату исполнения задачи
@@ -32,17 +32,17 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 	}
-	rule, err:= PrepareRepeat(repeat)
+	rule, err:= db.PrepareRepeat(repeat)
 	if err != nil {
 		http.Error(w, "неверный формат правила повторения", http.StatusBadRequest)
 		return
 	}
-	date, err:= PrepareDate(dstart)
+	date, err:= db.PrepareDate(dstart)
 	if err != nil {
 		http.Error(w, "неверный формат времени, ожидается YYYYMMD", http.StatusBadRequest)
 		return
 	}
-	nextDate, err := NextDate(now, rule, date)
+	nextDate, err := db.NextDate(now, rule, date)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

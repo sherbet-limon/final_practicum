@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	// "go1f/pkg/db"
 )
 
 func Init() {

@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	// "go1f/pkg/db"
 	"log"
 
 	_ "modernc.org/sqlite"
