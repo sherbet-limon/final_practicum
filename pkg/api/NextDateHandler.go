@@ -19,33 +19,23 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Нет данных", http.StatusBadRequest)
 	}
 	// дата "сегодняшняя", которую достаем из запроса для проверки на пустоту
-	nowStr := r.FormValue("now")
-
-	// дата "сегодняшняя", которую используем далее
-	var now time.Time
-	var err error
-	if nowStr == "" {
-		now = time.Now()
-	}else{
-		now, err = time.Parse(FormatDate, nowStr)
-		if err != nil {
-			panic(err)
-		}
-	}
-	rule, err:= db.PrepareRepeat(repeat)
+	// nowStr := r.FormValue("now")
+	// // дата "сегодняшняя", которую используем далее
+	// var now time.Time
+	// var err error
+	// if nowStr == "" {
+	// 	now = time.Now()
+	// }else{
+	// 	now, err = time.Parse(FormatDate, nowStr)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// }
+	now := time.Now()
+	nextDate, err:= db.NextDate(now, dstart, repeat)
 	if err != nil {
 		http.Error(w, "неверный формат правила повторения", http.StatusBadRequest)
 		return
 	}
-	date, err:= db.PrepareDate(dstart)
-	if err != nil {
-		http.Error(w, "неверный формат времени, ожидается YYYYMMD", http.StatusBadRequest)
-		return
-	}
-	nextDate, err := db.NextDate(now, rule, date)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
 	w.Write([]byte(nextDate))
-}
+	}

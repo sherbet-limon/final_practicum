@@ -8,7 +8,51 @@ import (
 	"strconv"
 	"time"
 	"go1f/pkg/db"
+	"errors"
 )
+const formatDate string = "20060102"
+
+func Add(task *db.Task, timeParseTaskDate, dateTaskNow time.Time) (int64, error){
+	tasks := task
+	var id int64
+	var err error
+	switch {
+	case *task.Repeat == "" || task.Repeat == nil:
+		if db.AfterDate(timeParseTaskDate, dateTaskNow){
+		id, err = db.AddTask(tasks)
+		if err != nil {
+			return 0, errors.New("ошибка добавления записи")
+		}
+		} else {
+		task.Date = dateTaskNow.Format(FormatDate)
+		id, err = db.AddTask(tasks)
+		if err != nil {
+			return 0, errors.New("неверный формат даты, ожидается YYYYMMD")
+		}
+		}
+	default:
+		if db.AfterDate(timeParseTaskDate, dateTaskNow){
+		id, err = db.AddTask(task)
+			if err != nil {
+			return 0, errors.New("неверный формат даты, ожидается YYYYMMD")
+			}
+		} else {
+		dstart:=timeParseTaskDate.Format(formatDate)
+		nextDate, err := db.NextDate(dateTaskNow, dstart, *task.Repeat)
+		if err != nil {
+			if err != nil {
+				return 0, errors.New("неверный формат даты, ожидается YYYYMMD")
+			}
+	task.Date = nextDate
+	id, err = db.AddTask(task)
+	if err != nil {
+		return 0, errors.New("неверный формат даты, ожидается YYYYMMD")
+	}
+}
+}
+	}
+return id, nil
+}
 //post - добавляет запись в бд после проверки заголовка, даты и repeat
 func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task *db.Task
@@ -35,8 +79,9 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// dateTaskNow - текущее время, если task.Date пустое или отсутствует
-	var dateTaskNow time.Time
+	// текущая дата, если task.Date пустое
+	var dateTaskNow time.Time 
+	// дата старта, из запроса или now при отсутствии в запросе 
 	var timeParseTaskDate time.Time
 	if task.Date == "" {
 		dateTaskNow, err = db.CheckDate(task.Date)
@@ -56,55 +101,10 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	var nextDate string
-	var id int64
 
-	switch {
-		case *task.Repeat == "" || task.Repeat == nil:
-			if db.AfterDate(timeParseTaskDate, dateTaskNow){
-				id, err = db.AddTask(task)
-				if err != nil {
-					writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
-					log.Println("задача не добавлена в бд")
-				}
-			} else {
-			task.Date = dateTaskNow.Format(FormatDate)
-			id, err = db.AddTask(task)
-			if err != nil {
-				writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
-				log.Println("задача не добавлена в бд")
-			}
-			}
-		default:
-			dateParts, err := db.PrepareRepeat(*task.Repeat)
-			if err != nil {
-				writeError(w, "не верный формат правила повторения", http.StatusBadRequest)
-				return
-			}
-			if db.AfterDate(timeParseTaskDate, dateTaskNow){
-				id, err = db.AddTask(task)
-					if err != nil {
-					writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
-					log.Println("задача не добавлена в бд")
-				}
-				
-			} else {
-				nextDate, err = db.NextDate(dateTaskNow, dateParts, timeParseTaskDate)
-				if err != nil {
-				writeError(w, err.Error(), http.StatusBadRequest)
-				return
-				}
-			task.Date = nextDate
-			id, err = db.AddTask(task)
-			if err != nil {
-				writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
-			}
-				
-			
-		}
-	}
-	idRes := strconv.Itoa(int(id))
-	writeJson(w, map[string]string{"id": idRes}, http.StatusOK)
+	idRes, err := Add(task, timeParseTaskDate, dateTaskNow)
+	result:=strconv.Itoa(int(idRes))
+	writeJson(w, map[string]string{"id": result}, http.StatusOK)
 	timeParseTaskDate = dateTaskNow
 	task.Date = timeParseTaskDate.Format(FormatDate)
 }
@@ -162,47 +162,7 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	var nextDate string
-	switch {
-		case *task.Repeat == "" || task.Repeat == nil:
-			if db.AfterDate(timeParseTaskDate, dateTaskNow){
-				err = db.UpdateTask(task)
-				if err != nil {
-					writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-					log.Println("задача не обновлена в бд")
-				}
-			} else {
-			task.Date = dateTaskNow.Format(FormatDate)
-			err = db.UpdateTask(task)
-			if err != nil {
-				writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
-				log.Println("задача не обновлена в бд")
-			}
-			}
-		default:
-			dateParts, err := db.PrepareRepeat(*task.Repeat)
-			if err != nil {
-				writeError(w, "не верный формат правила повторения", http.StatusBadRequest)
-				return
-			}
-			if db.AfterDate(timeParseTaskDate, dateTaskNow){
-				err = db.UpdateTask(task)
-					if err != nil {
-					writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-					log.Println("задача не обновлена в бд")
-				}
-			} else {
-			nextDate, err = db.NextDate(dateTaskNow, dateParts, timeParseTaskDate)
-				if err != nil {
-				writeError(w, err.Error(), http.StatusBadRequest)
-				return
-				}
-			task.Date = nextDate
-			err = db.UpdateTask(task)
-			if err != nil {
-				writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-			}
-		}
+	idRes, err := Add(task, timeParseTaskDate, dateTaskNow)
 		writeJson(w, map[string]string{}, http.StatusOK)
 	}
 }
