@@ -15,12 +15,11 @@ func CheckDate(nowStr string) (time.Time, error) {
 	var err error
 	if nowStr == "" {
 		now = time.Now()
-	} else {
+	}
 		now, err = time.Parse(formatDate, nowStr)
 		if err != nil {
 			panic(err)
 		}
-	}
 	return now, nil
 }
 

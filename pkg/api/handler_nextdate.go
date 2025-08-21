@@ -25,14 +25,14 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	// дата "сегодняшняя", которую используем далее
 	var now time.Time
 	var err error
-	if nowStr == "" {
-		now = time.Now()
-	} else {
+	// if nowStr == "" {
+	// now = time.Now()
+	// } 
 		now, err = time.Parse(FormatDate, nowStr)
 		if err != nil {
 			panic(err)
 		}
-	}
+	
 	rule, err := PrepareRepeat(repeat)
 	if err != nil {
 		http.Error(w, "неверный формат правила повторения", http.StatusBadRequest)

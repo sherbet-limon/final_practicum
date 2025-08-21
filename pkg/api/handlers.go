@@ -48,15 +48,15 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		task.Date = dateTaskNow.Format(FormatDate)
 		timeParseTaskDate = dateTaskNow
-	} else {
-		dateTaskNow = time.Now()
-		timeParseTaskDate, err = PrepareDate(task.Date)
-		if err != nil {
-			writeError(w, "не верный формат даты или дата не существует", http.StatusBadRequest)
-			log.Println("строка не форматировалась в дату")
-			return
-		}
 	}
+	dateTaskNow = time.Now()
+	timeParseTaskDate, err = PrepareDate(task.Date)
+	if err != nil {
+		writeError(w, "не верный формат даты или дата не существует", http.StatusBadRequest)
+		log.Println("строка не форматировалась в дату")
+		return
+	}
+
 	var nextDate string
 	var id int64
 
@@ -68,14 +68,14 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 				writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
 				log.Println("задача не добавлена в бд")
 			}
-		} else {
-			task.Date = dateTaskNow.Format(FormatDate)
-			id, err = db.AddTask(task)
-			if err != nil {
-				writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
-				log.Println("задача не добавлена в бд")
-			}
 		}
+		task.Date = dateTaskNow.Format(FormatDate)
+		id, err = db.AddTask(task)
+		if err != nil {
+			writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
+			log.Println("задача не добавлена в бд")
+		}
+
 	default:
 		dateParts, err := PrepareRepeat(*task.Repeat)
 		if err != nil {
@@ -89,19 +89,18 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 				log.Println("задача не добавлена в бд")
 			}
 
-		} else {
-			nextDate, err = NextDate(dateTaskNow, dateParts, timeParseTaskDate)
-			if err != nil {
-				writeError(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			task.Date = nextDate
-			id, err = db.AddTask(task)
-			if err != nil {
-				writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
-			}
-
 		}
+		nextDate, err = NextDate(dateTaskNow, dateParts, timeParseTaskDate)
+		if err != nil {
+			writeError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		task.Date = nextDate
+		id, err = db.AddTask(task)
+		if err != nil {
+			writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
+		}
+
 	}
 	idRes := strconv.Itoa(int(id))
 	writeJson(w, map[string]string{"id": idRes}, http.StatusOK)
@@ -152,15 +151,15 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		task.Date = dateTaskNow.Format(FormatDate)
 		timeParseTaskDate = dateTaskNow
-	} else {
-		dateTaskNow = time.Now()
-		timeParseTaskDate, err = PrepareDate(task.Date)
-		if err != nil {
-			writeError(w, "не верный формат даты или дата не существует", http.StatusBadRequest)
-			log.Println("строка не форматировалась в дату")
-			return
-		}
 	}
+	dateTaskNow = time.Now()
+	timeParseTaskDate, err = PrepareDate(task.Date)
+	if err != nil {
+		writeError(w, "не верный формат даты или дата не существует", http.StatusBadRequest)
+		log.Println("строка не форматировалась в дату")
+		return
+	}
+
 	var nextDate string
 	switch {
 	case *task.Repeat == "" || task.Repeat == nil:
@@ -170,14 +169,14 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 				writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
 				log.Println("задача не обновлена в бд")
 			}
-		} else {
-			task.Date = dateTaskNow.Format(FormatDate)
-			err = db.UpdateTask(task)
-			if err != nil {
-				writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
-				log.Println("задача не обновлена в бд")
-			}
 		}
+		task.Date = dateTaskNow.Format(FormatDate)
+		err = db.UpdateTask(task)
+		if err != nil {
+			writeError(w, "ошибка добавления задачи в бд", http.StatusBadRequest)
+			log.Println("задача не обновлена в бд")
+		}
+
 	default:
 		dateParts, err := PrepareRepeat(*task.Repeat)
 		if err != nil {
@@ -190,18 +189,18 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 				writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
 				log.Println("задача не обновлена в бд")
 			}
-		} else {
-			nextDate, err = NextDate(dateTaskNow, dateParts, timeParseTaskDate)
-			if err != nil {
-				writeError(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			task.Date = nextDate
-			err = db.UpdateTask(task)
-			if err != nil {
-				writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-			}
 		}
+		nextDate, err = NextDate(dateTaskNow, dateParts, timeParseTaskDate)
+		if err != nil {
+			writeError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		task.Date = nextDate
+		err = db.UpdateTask(task)
+		if err != nil {
+			writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
+		}
+
 		writeJson(w, map[string]string{}, http.StatusOK)
 	}
 }
