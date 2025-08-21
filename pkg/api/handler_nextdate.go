@@ -3,9 +3,10 @@ package api
 import (
 	"net/http"
 	"time"
-	
 )
+
 const FormatDate string = "20060102"
+
 // обрабатывает входящий запрос, возвращает след.дату исполнения задачи
 func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -26,18 +27,18 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	if nowStr == "" {
 		now = time.Now()
-	}else{
+	} else {
 		now, err = time.Parse(FormatDate, nowStr)
 		if err != nil {
 			panic(err)
 		}
 	}
-	rule, err:= PrepareRepeat(repeat)
+	rule, err := PrepareRepeat(repeat)
 	if err != nil {
 		http.Error(w, "неверный формат правила повторения", http.StatusBadRequest)
 		return
 	}
-	date, err:= PrepareDate(dstart)
+	date, err := PrepareDate(dstart)
 	if err != nil {
 		http.Error(w, "неверный формат времени, ожидается YYYYMMD", http.StatusBadRequest)
 		return
@@ -47,5 +48,9 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	w.Write([]byte(nextDate))
+	_, err = w.Write([]byte(nextDate))
+	if err != nil {
+		http.Error(w, "ошибка записи ответа", http.StatusBadRequest)
+		return
+	}
 }

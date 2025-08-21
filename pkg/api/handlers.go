@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-//post - добавляет запись в бд после проверки заголовка, даты и repeat
+// post - добавляет запись в бд после проверки заголовка, даты и repeat
 func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task *db.Task
 	var buf bytes.Buffer
@@ -106,10 +106,9 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 	idRes := strconv.Itoa(int(id))
 	writeJson(w, map[string]string{"id": idRes}, http.StatusOK)
 	timeParseTaskDate = dateTaskNow
-	task.Date = timeParseTaskDate.Format(FormatDate)
 }
 
-//get - получаем task из бд по id из Url
+// get - получаем task из бд по id из Url
 func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	task, err := db.GetTasksByID(id)
@@ -217,7 +216,7 @@ func TasksHandler(w http.ResponseWriter, r *http.Request) {
 	writeJson(w, db.TasksResp{Tasks: tasks}, http.StatusOK)
 }
 
-//удаляет задачи
+// удаляет задачи
 func TaskDelHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if err := db.DeleteTask(id); err != nil {
@@ -237,38 +236,38 @@ func TaskDoneHandler(w http.ResponseWriter, r *http.Request) {
 	if task.Repeat == nil || *task.Repeat == "" {
 		TaskDelHandler(w, r)
 		return
-	} else {
-		now, err := CheckDate(task.Date)
-		if err != nil {
-			writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-			log.Println("задача не обновлена в бд")
-		}
-		dateParts, err := PrepareRepeat(*task.Repeat)
-		if err != nil {
-			writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-			log.Println("задача не обновлена в бд")
-		}
-		dateStart, err := PrepareDate(task.Date)
-		if err != nil {
-			writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-			log.Println("задача не обновлена в бд")
-		}
-		finDate, err := NextDate(now, dateParts, dateStart)
-		if err != nil {
-			writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-			log.Println("задача не обновлена в бд")
-		}
-		task.Date = finDate
-		err = db.UpdateDate(task, id)
-		if err != nil {
-			writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
-			log.Println("задача не обновлена в бд")
-		}
-		writeJson(w, map[string]string{}, http.StatusOK)
 	}
+	now, err := CheckDate(task.Date)
+	if err != nil {
+		writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
+		log.Println("задача не обновлена в бд")
+	}
+	dateParts, err := PrepareRepeat(*task.Repeat)
+	if err != nil {
+		writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
+		log.Println("задача не обновлена в бд")
+	}
+	dateStart, err := PrepareDate(task.Date)
+	if err != nil {
+		writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
+		log.Println("задача не обновлена в бд")
+	}
+	finDate, err := NextDate(now, dateParts, dateStart)
+	if err != nil {
+		writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
+		log.Println("задача не обновлена в бд")
+	}
+	task.Date = finDate
+	err = db.UpdateDate(task, id)
+	if err != nil {
+		writeError(w, "ошибка обновления задачи в бд", http.StatusBadRequest)
+		log.Println("задача не обновлена в бд")
+	}
+	writeJson(w, map[string]string{}, http.StatusOK)
+
 }
 
-//формирует ответ в JSON, записывает заголовок и статус
+// формирует ответ в JSON, записывает заголовок и статус
 func writeJson(w http.ResponseWriter, data any, statusCode int) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(statusCode)
