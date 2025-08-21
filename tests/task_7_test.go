@@ -24,17 +24,17 @@ func TestDone(t *testing.T) {
 	defer db.Close()
 
 	now := time.Now()
-	// id := addTask(t, task{
-	// 	date:  now.Format(`20060102`),
-	// 	title: "Свести баланс",
-	// })
-
-	// ret, err := postJSON("api/task/done?id="+id, nil, http.MethodPost)
-	// assert.NoError(t, err)
-	// assert.Empty(t, ret)
-	// notFoundTask(t, id)
-
 	id := addTask(t, task{
+		date:  now.Format(`20060102`),
+		title: "Свести баланс",
+	})
+
+	ret, err := postJSON("api/task/done?id="+id, nil, http.MethodPost)
+	assert.NoError(t, err)
+	assert.Empty(t, ret)
+	notFoundTask(t, id)
+
+	id = addTask(t, task{
 		title:  "Проверить работу /api/task/done",
 		repeat: "d 3",
 	})

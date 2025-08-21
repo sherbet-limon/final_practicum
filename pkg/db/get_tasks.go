@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 	_ "modernc.org/sqlite"
@@ -17,19 +16,15 @@ type TasksResp struct {
 }
 
 func GetTasksByDate(limit int) ([]*Task, error) {
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		log.Println("не удалось открыть БД")
-		return nil, errors.New("не удалось открыть БД")
-	}
-	defer db.Close()
+	if DB == nil {
+        return nil, errors.New("БД не инициализирована")
+    }
 
-	rows, err := db.Query(query, limit)
+	rows, err := DB.Query(query, limit)
 	if err != nil {
 		log.Println("не удалось получить данные из БД")
 		return nil, errors.New("не удалось получить данные из БД")
 	}
-	defer rows.Close()
 	
 	tasks := []*Task{}
 	for rows.Next() {
@@ -41,36 +36,38 @@ func GetTasksByDate(limit int) ([]*Task, error) {
 		}
 		tasks = append(tasks, &task)
 	}
+	if err := rows.Err(); err != nil {
+        log.Println("ошибка при чтении строк:", err)
+        return nil, errors.New("ошибка при чтении строк из БД")
+	}
 	return tasks, nil
 }
 
 func GetTasksByID(id string)(*Task, error){
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		log.Println("не удалось открыть БД")
-		return nil, errors.New("не удалось открыть БД")
-	}
-	defer db.Close()
+	if DB == nil {
+        return nil, errors.New("БД не инициализирована")
+    }
 
 	task := &Task{}
-	row := db.QueryRow(queryId, id) 
-	err = row.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	row := DB.QueryRow(queryId, id) 
+	err := row.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 	if err != nil {
 		log.Println("не удалось получить данные из БД")
 		return nil, errors.New("не удалось получить данные из БД")
+	}
+	if err := row.Err(); err != nil {
+        log.Println("ошибка при чтении строк:", err)
+        return nil, errors.New("ошибка при чтении строк из БД")
 	}
 	return task, nil
 }
 
 func UpdateTask(task *Task) error {
-    db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		log.Println("не удалось открыть БД")
-		return errors.New("не удалось открыть БД")
-	}
-	defer db.Close()
+    if DB == nil {
+        return errors.New("БД не инициализирована")
+    }
 
-	res, err := db.Exec(queryUpdate, 
+	res, err := DB.Exec(queryUpdate, 
         task.Date,
         task.Title,
         task.Comment,
@@ -91,14 +88,11 @@ func UpdateTask(task *Task) error {
 }
 
 func UpdateDate(task *Task, id string) error {
-    db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		log.Println("не удалось открыть БД")
-		return errors.New("не удалось открыть БД")
-	}
-	defer db.Close()
+	if DB == nil {
+        return errors.New("БД не инициализирована")
+    }
 
-	res, err := db.Exec(queryUpdateDate, task.Date, id)
+	res, err := DB.Exec(queryUpdateDate, task.Date, id)
     if err != nil {
         return errors.New("не удалось обновить данные в БД")
     }
@@ -114,14 +108,10 @@ func UpdateDate(task *Task, id string) error {
 }
 
 func DeleteTask(id string) error {
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		log.Println("не удалось открыть БД")
-		return errors.New("не удалось открыть БД")
-	}
-	defer db.Close()
-
-	res, err := db.Exec(queryDelete, id)
+	if DB == nil {
+        return errors.New("БД не инициализирована")
+    }
+	res, err := DB.Exec(queryDelete, id)
 	if err != nil {
 		log.Println("не удалось удалить данные из БД")
 		return errors.New("не удалось удалить данные из БД")
