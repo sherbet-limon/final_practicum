@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 )
+
 // обработчик методов post, put etc
 func TaskHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -10,7 +11,7 @@ func TaskHandler(w http.ResponseWriter, r *http.Request) {
 		AddTaskHandler(w, r)
 	case http.MethodPut:
 		UpdateTaskHandler(w, r)
-	case http.MethodGet:	
+	case http.MethodGet:
 		GetTaskHandler(w, r)
 	case http.MethodDelete:
 		TaskDelHandler(w, r)

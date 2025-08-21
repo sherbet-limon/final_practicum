@@ -14,10 +14,10 @@ func main() {
 		return
 	}
 	defer func() {
-        if db.DB != nil {
-            db.DB.Close()
-        }
-    }()
+		if db.DB != nil {
+			db.DB.Close()
+		}
+	}()
 	log.Println("БД успешно инициализирована")
 	server.Run()
 }

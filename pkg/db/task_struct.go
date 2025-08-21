@@ -1,6 +1,5 @@
 package db
 
-
 type Task struct {
 	ID      string  `json:"id"`
 	Date    string  `json:"date"`
@@ -8,4 +7,3 @@ type Task struct {
 	Comment string  `json:"comment"`
 	Repeat  *string `json:"repeat"`
 }
-

@@ -21,7 +21,7 @@ CREATE INDEX IF NOT EXISTS date_id ON scheduler (date);`
 
 var DB *sql.DB
 
-//проверяем наличие бд, если нет, то CREATE TABLE INDEX
+// проверяем наличие бд, если нет, то CREATE TABLE INDEX
 func Init(dbFile string) error {
 	var install bool
 	_, err := os.Stat(dbFile)

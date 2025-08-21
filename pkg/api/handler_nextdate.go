@@ -9,7 +9,10 @@ const FormatDate string = "20060102"
 
 // обрабатывает входящий запрос, возвращает след.дату исполнения задачи
 func NextDateHandler(w http.ResponseWriter, r *http.Request) {
-
+	if r.Method != http.MethodGet {
+		http.Error(w, "только метод GET", http.StatusMethodNotAllowed)
+		return
+	}
 	//дата выполнения получена из запроса (может быть любой)
 	dstart := r.FormValue("date")
 	if dstart == "" {
@@ -27,12 +30,12 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	// if nowStr == "" {
 	// now = time.Now()
-	// } 
-		now, err = time.Parse(FormatDate, nowStr)
-		if err != nil {
-			panic(err)
-		}
-	
+	// }
+	now, err = time.Parse(FormatDate, nowStr)
+	if err != nil {
+		panic(err)
+	}
+
 	rule, err := PrepareRepeat(repeat)
 	if err != nil {
 		http.Error(w, "неверный формат правила повторения", http.StatusBadRequest)
@@ -50,7 +53,7 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = w.Write([]byte(nextDate))
 	if err != nil {
-		http.Error(w, "ошибка записи ответа", http.StatusBadRequest)
+		http.Error(w, "ошибка записи ответа", http.StatusInternalServerError)
 		return
 	}
 }
